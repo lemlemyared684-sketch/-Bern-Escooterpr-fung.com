@@ -1,0 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BE589 Scooter Academy</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#10151d;color:white;font-family:Arial,sans-serif;padding:18px}
+main{max-width:600px;margin:auto}
+.card{background:#202b38;border:1px solid #394958;border-radius:18px;padding:22px;margin:15px 0}
+h1,h2{margin-top:0}
+.green{color:#39e6a5}
+.plate{background:white;color:black;border:4px solid #39e6a5;border-radius:8px;text-align:center;padding:8px;width:190px;margin:18px auto;font-weight:bold}
+.plate small{display:block;font-size:18px}.plate strong{font-size:42px}
+button{border:0;border-radius:10px;padding:13px 18px;background:#39e6a5;color:#10151d;font-weight:bold;font-size:16px;cursor:pointer;margin:5px 0}
+button:disabled{opacity:.5}
+.option{display:block;width:100%;text-align:left;background:#344454;color:white;border:1px solid #526476;margin:8px 0}
+.option.selected{border:2px solid #39e6a5;background:#1d5145}
+.option:disabled{opacity:1}
+.small{font-size:13px;color:#bac6d2;line-height:1.5}
+#quiz,#result{display:none}
+.progress{height:8px;background:#394958;border-radius:10px;overflow:hidden}
+#bar{height:100%;width:0;background:#39e6a5}
+</style>
+</head>
+<body>
+<main>
+<section class="card" id="intro">
+<div style="font-size:42px">🛴</div>
+<h1>BE589 <span class="green">ACADEMY</span></h1>
+<p>Deine digitale E-Scooter-Wissensprüfung</p>
+<div class="plate"><small>BE</small><strong>589</strong></div>
+<p><b>20 Fragen · 20 mögliche Punkte</b></p>
+<p class="small">Beantworte die Fragen zu Sicherheit, Verkehrsregeln und Technik. Diese Prüfung ist ein privates Spaßprojekt und keine amtliche Prüfung. Sie erteilt keine Fahrerlaubnis.</p>
+<button onclick="start()">Prüfung starten →</button>
+</section>
+
+<section class="card" id="quiz">
+<p class="green" id="counter"></p>
+<div class="progress"><div id="bar"></div></div>
+<h2 id="question"></h2>
+<div id="options"></div>
+<p class="small" id="feedback"></p>
+<button id="next" onclick="advance()" disabled>Weiter →</button>
+</section>
+
+<section class="card" id="result">
+<div style="font-size:42px">🏁</div>
+<h1>Prüfung beendet!</h1>
+<div class="plate"><small>BE</small><strong>589</strong></div>
+<h2 id="score"></h2>
+<p id="message"></p>
+<p id="license"></p>
+<p class="small">Dieses Ergebnis ist eine selbst erstellte Spaß-Auswertung. Es ist kein amtlicher Führerschein und keine gesetzliche Erlaubnis, einen E-Scooter zu fahren.</p>
+<button onclick="location.reload()">Nochmal versuchen ↻</button>
+</section>
+</main>
+
+<script>
+const questions = [
+{q:"1. Was solltest du vor einer Fahrt prüfen?",a:["Bremsen und Reifen","Nur die Farbe","Nur das Display","Nichts"],c:0},
+{q:"2. Was gehört beim Fahren immer zur Sicherheit?",a:["Vorausschauend fahren","Auf das Handy schauen","Andere erschrecken","Mit geschlossenen Augen fahren"],c:0},
+{q:"3. Was machst du bei einer roten Ampel?",a:["Weiterfahren","Anhalten","Schneller fahren","Auf dem Trottoir ausweichen"],c:1},
+{q:"4. Darfst du während der Fahrt Nachrichten tippen?",a:["Ja, immer","Nur bergab","Nein, das lenkt ab","Nur mit einer Hand"],c:2},
+{q:"5. Was machst du bei nasser Fahrbahn?",a:["Vorsichtiger fahren und mehr Abstand halten","Stärker beschleunigen","Scharf bremsen ohne Grund","Freihändig fahren"],c:0},
+{q:"6. Was bedeutet ein Stoppsignal?",a:["Nur langsamer werden","Anhalten und die Situation prüfen","Hupen und weiterfahren","Überholen"],c:1},
+{q:"7. Was solltest du bei schlechter Sicht tun?",a:["Ohne Licht fahren","Dunkle Kleidung ohne Licht tragen","Sichtbarkeit und Beleuchtung sicherstellen","Schneller fahren"],c:2},
+{q:"8. Was ist bei einer Kurve sinnvoll?",a:["Kontrolliert und vorsichtig fahren","Plötzlich stark lenken","Freihändig fahren","Auf das Handy schauen"],c:0},
+{q:"9. Was schützt deinen Kopf bei einem Sturz?",a:["Eine Kappe","Ein passender Helm","Kopfhörer","Eine Sonnenbrille allein"],c:1},
+{q:"10. Was machst du, wenn die Bremsen nicht richtig funktionieren?",a:["Weiterfahren","Schneller fahren","Fahrt nicht antreten und den Defekt beheben lassen","Nur mit den Füssen bremsen"],c:2},
+{q:"11. Darfst du andere Verkehrsteilnehmer absichtlich gefährden?",a:["Ja, wenn es lustig ist","Nein","Nur auf kurzen Strecken","Nur mit einem Warnblinker"],c:1},
+{q:"12. Was ist bei einer Kreuzung wichtig?",a:["Aufmerksam schauen und Vortrittsregeln beachten","Immer zuerst fahren","Nur nach links schauen","Beschleunigen ohne zu schauen"],c:0},
+{q:"13. Was machst du, wenn ein Fussgänger deinen Weg kreuzt?",a:["Ihn erschrecken","Auf ihn zufahren","Tempo anpassen und nötigenfalls anhalten","Unbedingt überholen"],c:2},
+{q:"14. Was gilt für die Geschwindigkeit?",a:["Immer die Höchstgeschwindigkeit ausnutzen","An Situation und geltende Regeln anpassen","Auf dem Trottoir beliebig schnell fahren","Andere Fahrzeuge jagen"],c:1},
+{q:"15. Was solltest du bei einem technischen Defekt tun?",a:["Den Defekt ignorieren","Weiterfahren, egal was passiert","Sicher anhalten und das Problem beheben lassen","Die Bremsen abklemmen"],c:2},
+{q:"16. Ist ein selbst erfundener Lizenzcode eine amtliche Bewilligung?",a:["Ja, immer","Ja, wenn er BE enthält","Nein","Ja, wenn er gedruckt ist"],c:2},
+{q:"17. Wovon hängt ab, ob du einen E-Scooter in der Schweiz fahren darfst?",a:["Nur vom Kenncode","Von den geltenden Regeln und dem Fahrzeugtyp","Nur von der Farbe","Nur von der Marke"],c:1},
+{q:"18. Was solltest du beim Abbiegen tun?",a:["Andere rechtzeitig und sicher auf die Absicht aufmerksam machen","Ohne zu schauen abbiegen","Plötzlich ausscheren","Auf der falschen Seite fahren"],c:0},
+{q:"19. Was ist bei einem Akku wichtig?",a:["Beschädigte Akkus weiterladen","Nur geeignete Ladegeräte verwenden und Schäden ernst nehmen","Akku absichtlich überhitzen","Wasser in den Ladeanschluss giessen"],c:1},
+{q:"20. Was ist das wichtigste Ziel beim Fahren?",a:["Andere überholen","Möglichst laut sein","Sicher und rücksichtsvoll unterwegs sein","So schnell wie möglich fahren"],c:2}
+];
+
+let index=0, score=0, answered=false;
+function start(){
+ document.getElementById("intro").style.display="none";
+ document.getElementById("quiz").style.display="block";
+ showQuestion();
+}
+function showQuestion(){
+ answered=false;
+ const q=questions[index];
+ document.getElementById("counter").textContent="FRAGE "+(index+1)+" VON "+questions.length;
+ document.getElementById("bar").style.width=(index/questions.length*100)+"%";
+ document.getElementById("question").textContent=q.q;
+ document.getElementById("options").innerHTML="";
+ document.getElementById("feedback").textContent="";
+ document.getElementById("next").disabled=true;
+ q.a.forEach((answer,i)=>{
+  const b=document.createElement("button");
+  b.className="option";
+  b.textContent=String.fromCharCode(65+i)+". "+answer;
+  b.onclick=()=>choose(i);
+  document.getElementById("options").appendChild(b);
+ });
+}
+function choose(choice){
+ if(answered)return;
+ answered=true;
+ const q=questions[index];
+ const buttons=document.querySelectorAll(".option");
+ buttons.forEach((b,i)=>{
+  b.disabled=true;
+  if(i===q.c)b.classList.add("selected");
+ });
+ if(choice===q.c){
+  score++;
+  document.getElementById("feedback").textContent="Richtig! +1 Punkt";
+ }else{
+  document.getElementById("feedback").textContent="Nicht ganz. Richtige Antwort: "+q.a[q.c];
+ }
+ document.getElementById("next").disabled=false;
+ document.getElementById("next").textContent=index===questions.length-1?"Ergebnis anzeigen":"Weiter →";
+}
+function advance(){
+ if(!answered)return;
+ index++;
+ if(index<questions.length){
+  showQuestion();
+ }else{
+  document.getElementById("quiz").style.display="none";
+  document.getElementById("result").style.display="block";
+  document.getElementById("bar").style.width="100%";
+  document.getElementById("score").textContent=score+" / 20 Punkte";
+  document.getElementById("message").textContent=
+   score>=16?"Stark! Du kennst viele wichtige Sicherheitsregeln.":
+   score>=10?"Gut versucht! Übe die Fragen nochmals.":
+   "Übe weiter und lerne die Sicherheitsregeln kennen.";
+  document.getElementById("license").textContent=
+  BE589 · Ergebnis: "+score+"/20 · amtlicher Nachweis";
+ }
+}
+</script>
+</body>
+</html>
